@@ -10,7 +10,9 @@ define()
 
 
 function initSimulation(){
-    var sim = new TaskInterferenceSimulator()
+    const stepSize = 1/20
+
+    var sim = new TaskInterferenceSimulator(stepSize)
     sim.nbAxisParts = 0
     sim.scheduler.reset();
 
@@ -24,14 +26,19 @@ document.addEventListener('DOMContentLoaded', initSimulation)
 
 function elaborateAndRunSystem(sim){
     // id, priority (higher is more prior), sceduler, profil for task (type, duration, args)
-    var r1 = new Resource(69,3, sim.scheduler)
-    var t1 = new Task(42, 2, sim.scheduler, [["access", 5, r1], ["execute", 10], ["access", 5, r1]])
-    var t2 = new Task(88, 1, sim.scheduler, [["access", 5, r1], ["execute", 10], ["access", 5, r1]])
-
-    r1.setAllTasksInfo([t1, t2])
+    var r1 = new Resource(69,3, 2, sim)
+    var t1 = new Task("t1", 1, sim, [["access", 992, r1], ["execute", 1000], ["access", 992, r1]])
+    var t2 = new Task("t2", 1, sim, [["access", 992, r1], ["execute", 1000], ["access", 992, r1]])
+    var t3 = new Task("t3", 1, sim, [["access", 992, r1], ["execute", 1000], ["access", 992, r1]])
+    var t4 = new Task("t4", 1, sim, [["access", 992, r1], ["execute", 1000], ["access", 992, r1]])
+    r1.setAllTasksInfo([t1, t2, t3, t4])
 
     sim.scheduler.schedule(t1, 0);
-    sim.scheduler.schedule(t2, 5);
-    sim.addOffset(t2, 5)
+    sim.scheduler.schedule(t2, 5111);
+    sim.addOffset(t2, 5111)
+    sim.scheduler.schedule(t3, 10593);
+    sim.addOffset(t3, 10593)
+    sim.scheduler.schedule(t4, 15887);
+    sim.addOffset(t4, 15887)
     sim.scheduler.schedule(r1, 0);
 }

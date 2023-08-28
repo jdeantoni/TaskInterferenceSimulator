@@ -3,10 +3,10 @@ import { Resource } from "./resource.js";
 
 class TaskInterferenceSimulator{
 
-    constructor(){
+    constructor(stepSize){
         this.scheduler = new jssim.Scheduler();
         this.nbAxisParts
-        this.stepSize = 5
+        this.stepSize = stepSize
     }
 
     createAxisPart(theDiv, time, size){
@@ -28,10 +28,10 @@ class TaskInterferenceSimulator{
         var taskSimulView = document.getElementById(task.guid().toString()+"simulationView")
         var fakeTask = document.createElement("div")
         fakeTask.className="task"
-        fakeTask.style.width = (offsetVal*10).toString()+"px"
+        fakeTask.style.width = (offsetVal*this.stepSize).toString()+"px"
         var offset = document.createElement("div")
         offset.className="offset"
-        offset.style.width = (offsetVal*10).toString()+"px"
+        offset.style.width = (offsetVal*this.stepSize).toString()+"px"
         fakeTask.appendChild(offset)
         taskSimulView.appendChild(fakeTask)
     }
@@ -66,16 +66,16 @@ class TaskInterferenceSimulator{
     doStep(){
         const allSimulationView = document.getElementsByClassName("simulationView")
 
-        timeLine.style.marginLeft = (4+(this.scheduler.current_time*10)).toString()+"px"
-        hidder.style.marginLeft = (4+(this.scheduler.current_time*10)).toString()+"px"
-        allSimulationView[0].innerHTML = "Simu@"+(this.scheduler.current_time*1).toString()
+        timeLine.style.marginLeft = Math.floor(4+(this.scheduler.current_time*this.stepSize)).toString()+"px"
+        hidder.style.marginLeft = Math.floor(4+(this.scheduler.current_time*this.stepSize)).toString()+"px"
+        allSimulationView[0].innerHTML = "Simu@"+Math.floor(this.scheduler.current_time*1).toString()+"&nbsp;&nbsp;&nbsp;&nbsp;"
         for(let i = 0; i < allSimulationView.length; i++){
-            allSimulationView[i].style.width = ((this.scheduler.current_time*10)).toString()+"px"
+            allSimulationView[i].style.width = Math.floor(this.scheduler.current_time *this.stepSize).toString()+"px"
         }
-        
-        var neededAxisParts = Math.floor(this.scheduler.current_time / this.stepSize)+1
+        var segmentTime = (50/this.stepSize)
+        var neededAxisParts = Math.floor(this.scheduler.current_time / segmentTime)+1
         for(let i = this.nbAxisParts; i < neededAxisParts; i++, this.nbAxisParts++){
-            this.createAxisPart(timeAxis, this.nbAxisParts*this.stepSize, this.stepSize*10)
+            this.createAxisPart(timeAxis, this.nbAxisParts*segmentTime, Math.floor(50*this.stepSize))
         } 
 
         document.getElementById("simulationSpeedDiv").style.visibility = "hidden"

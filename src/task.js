@@ -1,13 +1,14 @@
 import "../node_modules/js-simulator/src/jssim.js"
 
 class Task extends jssim.SimEvent {
-    constructor(uid, priority, sched, seg){
+    constructor(uid, priority, sim, seg){
         super(priority)
         this.id=uid
         this.state = "waitingAction"
         this.segment = seg
         this.currentAction = 0
-        this.scheduler = sched
+        this.sim=sim
+        this.scheduler = sim.scheduler
         this.interferenceDuration = 0
         this.startWaitingTime = -1
         this.taskWidth = 0;
@@ -55,16 +56,16 @@ class Task extends jssim.SimEvent {
                 action.appendChild(accessInterference)   
                 const accessInit = document.createElement("div");
                 accessInit.className="initialDuration"
-                accessInit.style.width = (duration * 10).toString() + "px";
+                accessInit.style.width = Math.floor(duration * this.sim.stepSize).toString() + "px";
                 action.appendChild(accessInit) 
             }
             action.className = type;
-            action.style.width = (duration * 10).toString() + "px";
-            this.taskWidth = this.taskWidth + (duration * 10);
+            action.style.width = Math.floor(duration * this.sim.stepSize).toString() + "px";
+            this.taskWidth = this.taskWidth + Math.floor(duration * this.sim.stepSize);
             task.appendChild(action);
         }
 
-        task.style.width = (this.taskWidth * 1.1).toString() + "px";
+        task.style.width = Math.floor(this.taskWidth*1.06).toString() + "px";
         return task
     }
 
@@ -80,7 +81,7 @@ class Task extends jssim.SimEvent {
                 this.taskDiv = this.createTask(this.guid(), this.segment)
                 // add the newly created element and its content into the DOM
                 var simView = document.getElementById(this.guid().toString()+"simulationView")
-                simView.style.width = (this.time*10).toString()+"px"
+                simView.style.width = Math.floor(this.time*this.sim.stepSize).toString()+"px"
                 simView.appendChild(this.taskDiv);
             }
 
@@ -110,10 +111,12 @@ class Task extends jssim.SimEvent {
             this.interferenceDuration = this.time - this.startWaitingTime
             var accessDiv = this.taskDiv.childNodes[this.currentAction]
             var interferDiv = accessDiv.childNodes[0]
-            this.taskDiv.style.width = (this.taskWidth + this.interferenceDuration*10).toString()+"px"
-            accessDiv.style.width = (this.segment[this.currentAction][1]*10 + this.interferenceDuration*10).toString()+"px" 
-            interferDiv.style.width = (this.interferenceDuration*10).toString()+"px"
-            interferDiv.innerHTML = '<h2 style="position:absolute; ">'+(this.interferenceDuration*1).toString()+"</h2>"
+            this.taskDiv.style.width = Math.floor(this.taskWidth + this.interferenceDuration*this.sim.stepSize).toString()+"px"
+            accessDiv.style.width = Math.floor(this.segment[this.currentAction][1]*this.sim.stepSize + this.interferenceDuration*this.sim.stepSize).toString()+"px" 
+            interferDiv.style.width = Math.floor(this.interferenceDuration*this.sim.stepSize).toString()+"px"
+            if (this.interferenceDuration > 0) {
+                interferDiv.innerHTML = '<h2 style="position:absolute; font-size:small;">'+(this.interferenceDuration).toString()+"</h2>"
+            }
             //'<h2 style="margin-top: 26px;margin-bottom: 0px;height: 30px;">'
             //do not wake up if no messages or KO
             nextSched = -1

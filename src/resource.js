@@ -2,12 +2,14 @@ import "../node_modules/js-simulator/src/jssim.js"
 
 
 class Resource extends jssim.SimEvent {
-    constructor(uid, priority, sched){
+    constructor(uid, priority, maxUsers, sim){
         super(priority)
         this.id=uid
         this.state = "idle"
-        this.scheduler = sched
-        this.currentUser = null
+        this.maxUsers = maxUsers
+        this.sim = sim
+        this.scheduler = sim.scheduler
+        this.currentUsers = []
         this.waitingUsers = []
     }
 
@@ -32,16 +34,28 @@ class Resource extends jssim.SimEvent {
     react(content, sender_id){
         if (this.state == "idle"){
             if(content == "get"){
-                this.state = "inUse"
-                this.sendMsg(sender_id,{
-                    content: "OK",
-                    sender:this.guid()
-                })
-                this.currentUser = this.getUser(sender_id)
+                if(this.currentUsers.length < this.maxUsers){
+                    this.sendMsg(sender_id,{
+                        content: "OK",
+                        sender:this.guid()
+                    })
+                    this.currentUsers.push(this.getUser(sender_id))
+                }else{
+                    this.state = "inUse"
+                    this.sendMsg(sender_id,{
+                        content: "KO",
+                        sender:this.guid()
+                    })
+                    this.waitingUsers.push(this.getUser(sender_id))
+                }
             }
             else if(content == "free"){
-                console.error("cannot free an idle resource")
-                this.scheduler.reset()
+                if(this.currentUsers.length > 0){
+                    this.freeUser(sender_id)
+                    if(this.waitingUsers.length > 0){ //optimize and avoid to ask every 1
+                        this.giveAccessToWaitingUser()
+                    }   
+                }
             }
         }
         else if (this.state == "inUse"){
@@ -53,19 +67,40 @@ class Resource extends jssim.SimEvent {
                 this.waitingUsers.push(this.getUser(sender_id))
             }
             else if(content == "free"){
-                this.state = "idle"
+                this.freeUser(sender_id)
                 if(this.waitingUsers.length > 0){ //optimize and avoid to ask every 1
-                    var nextUser = this.waitingUsers.pop()
-                    this.sendMsg(nextUser.guid(),{
-                        content: "OK",
-                        sender:this.guid()
-                    })
-                    console.log("@"+this.time+" resource "+this.guid()+" is "+this.state)
-                    this.state = "inUse"
-                    this.scheduler.scheduleOnceIn(nextUser,0)
+                    this.giveAccessToWaitingUser()
+                }else{
+                    this.state = "idle"
                 }
             }
         }
+        if (this.currentUsers.length > this.maxUsers){
+            console.error("@" + this.time + " resource " + this.guid() + ": too much users")
+        }
+    }
+
+    giveAccessToWaitingUser() {
+        var nextUser = this.waitingUsers.pop()
+        this.sendMsg(nextUser.guid(), {
+            content: "OK",
+            sender: this.guid()
+        })
+        this.currentUsers.push(nextUser)
+        console.log("@" + this.time + " resource " + this.guid() + " is " + this.state +" with "+this.currentUsers.length+" users")
+        this.scheduler.scheduleOnceIn(nextUser, 0)
+        return nextUser
+    }
+
+    freeUser(sender_id) {
+        var userToRemove = this.getUser(sender_id)
+        var indexOfUser = this.currentUsers.indexOf(userToRemove)
+        if (indexOfUser != -1) {
+            this.currentUsers.splice(indexOfUser, 1)
+        } else {
+            console.error("resource: a non accessing user if freeing")
+        }
+        return
     }
 
     //timed update
@@ -80,7 +115,7 @@ class Resource extends jssim.SimEvent {
                 var rank = msg.rank; // the messages[0] contains the highest ranked message and last messages contains lowest ranked
                 var content = msg.content; // for example the "Hello" text from the sendMsg code above
                 this.react(content, sender_id)
-                console.log("@"+this.time+" resource "+this.guid()+" is "+this.state)
+                console.log("@"+this.time+" resource "+this.guid()+" is "+this.state+" with "+this.currentUsers.length+" users")
         }
 
     }
