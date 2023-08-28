@@ -1,0 +1,201 @@
+.task {
+    /* width: 160px; */
+    height: 50px;
+    background-color: coral;
+    color: white;
+    display: inline-block;
+    white-space: nowrap;
+    vertical-align: middle;
+    align-items : center;
+  }
+  
+  .btnStart{
+    background-color: rgb(194, 251, 215);
+    box-shadow: rgba(44, 187, 99, .2) 0 -25px 18px -14px inset,rgba(44, 187, 99, .15) 0 1px 2px,rgba(44, 187, 99, .15) 0 2px 4px,rgba(44, 187, 99, .15) 0 4px 8px,rgba(44, 187, 99, .15) 0 8px 16px,rgba(44, 187, 99, .15) 0 16px 32px;
+    color: green;
+
+  }
+
+  .btnStop{
+    background-color: rgb(255, 46, 46);
+    box-shadow: rgba(187, 125, 44, 0.2) 0 -25px 18px -14px inset,rgba(187, 125, 44, .15) 0 1px 2px,rgba(187, 125, 44, .15) 0 2px 4px,rgba(187, 125, 44, .15) 0 4px 8px,rgba(187, 125, 44, .15) 0 8px 16px,rgba(187, 125, 44, .15) 0 16px 32px;
+    color: rgb(98, 0, 0);
+
+  }
+
+  .btn {
+    border-radius: 100px;
+    cursor: pointer;
+    display: inline-block;
+    font-family: CerebriSans-Regular,-apple-system,system-ui,Roboto,sans-serif;
+    padding: 7px 20px;
+    text-align: center;
+    text-decoration: none;
+    transition: all 250ms;
+    border: 0;
+    font-size: 16px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+  
+  .btnStart:hover {
+    box-shadow: rgba(44,187,99,.35) 0 -25px 18px -14px inset,rgba(44,187,99,.25) 0 1px 2px,rgba(44,187,99,.25) 0 2px 4px,rgba(44,187,99,.25) 0 4px 8px,rgba(44,187,99,.25) 0 8px 16px,rgba(44,187,99,.25) 0 16px 32px;
+    transform: scale(1.05) rotate(-1deg);
+  }
+
+  .btnStop:hover {
+    box-shadow: rgba(187, 125, 44,.35) 0 -25px 18px -14px inset,rgba(187, 125, 44,.25) 0 1px 2px,rgba(187, 125, 44,.25) 0 2px 4px,rgba(187, 125, 44,.25) 0 4px 8px,rgba(187, 125, 44,.25) 0 8px 16px,rgba(187, 125, 44,.25) 0 16px 32px;
+    transform: scale(1.05) rotate(-1deg);
+  }
+
+  .offset {
+    /* width: 50px; */
+    height: 50px;
+    background-color: rgb(95, 95, 95);
+    color: white; 
+    display: inline-block;
+  }
+
+  .access {
+    /* width: 50px; */
+    height: 50px;
+    background-color: rgb(39, 244, 107);
+    color: white; 
+    display: inline-block;
+  }
+  .initialDuration {
+    height: 50px;
+    background-color: rgb(206, 244, 39);
+    color: white;
+    display: inline-block;
+  }
+  
+  .interferenceDuration {
+    height: 50px;
+    background-color: rgb(243, 49, 49);
+    color: white;
+    display: inline-block;
+  }
+  
+  .execute {
+    /* width: 50px; */
+    height: 50px;
+    background-color: #6b27f4;
+    color: white;
+    display: inline-block;
+  }
+  
+   html { 
+     width: 100%; 
+    /* overflow:auto;  */
+  } 
+
+  body{
+    background-color: #f0f0f0;
+     width: 100%; 
+  }
+  .hidder{
+    background-color: #f0f0f0;
+    height: 500px;
+    position: absolute;
+    left: 0px;
+    margin-left: 0px;
+    top: 40px;
+  }
+  
+  .taskView{
+    background-color: #f7f7f7;
+    padding: 10px;
+    /*white-space: nowrap;
+    display: inline-block; */
+  }
+  
+  .staticView{
+    background-color: #ffffff;
+    padding: 10px;
+  }
+
+  .simulationControl{
+    position: fixed;
+    left: 50px;
+    top: 25px;
+    width: 1000px;
+    display: inline-block;
+    white-space: nowrap;
+  }
+
+  .simulationSpeed{
+    display: inline-block;
+    white-space: nowrap;
+  }
+
+  .simulationControlSpace{
+    height: 75px;
+  }
+  
+  .simulationView{
+    background-color: #faadad;
+    display: inline-block;
+    white-space: nowrap;
+    text-align: right;
+    /* overflow-y: hidden; */
+  }
+  
+  .simuColumn{
+      display: inline-block;
+      white-space: nowrap;
+  }
+  
+  table, td {
+    border: 1px solid black;
+  }
+  
+  .vl {
+    border-left: 6px solid green;
+    height: 500px;
+    position: absolute;
+    left: 0px;
+    margin-left: 0px;
+    top: 40px;
+    visibility: hidden;
+  }
+
+  .svl {
+    border-left: 1px solid green;
+    height: 10px;
+    width:0px;
+    position: relative;
+    left: 0px;
+    top: 20px;
+    margin-left: 0px;
+    display: inline-block;
+    /* top: 40px;
+    visibility: hidden; */
+  }
+
+  .hl {
+    border-top: 2px solid green;
+    width: 50px;
+    position: relative; 
+    left: 0px;
+    margin-left: -1px;
+    top: 15px; 
+    display: inline-block;
+    /* visibility: hidden; */
+  }
+  .timeMark {
+    position: relative; 
+    left: -15px;
+    width: 0px;
+    margin-left: 0px;
+    top: 3px; 
+    display: inline-block;
+    /* visibility: hidden; */
+  }
+
+  .timeAxis{
+    position: absolute;
+    white-space: nowrap;
+  }
+  
