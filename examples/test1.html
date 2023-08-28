@@ -5,9 +5,9 @@
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
     <title>Page Title</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <link rel='stylesheet' type='text/css' media='screen' href='archeocs.css'>
-    <script src="./node_modules/js-simulator/src/jssim.js" type="text/javascript"></script>
-    <script src='archeocs.js'></script>
+    <link rel='stylesheet' type='text/css' media='screen' href='../src/task-interefence-simulator.css'>
+    <script src="../node_modules/js-simulator/src/jssim.js" type="text/javascript"></script>
+    <script src='../src/task-interefence-simulator.js'></script>
 </head>
 <body onload="initSimulation()">
 
@@ -21,7 +21,6 @@
 </div>
 
 <div class="simulationControlSpace">
-
 </div>
 
 <table id="mainTable">
@@ -45,20 +44,14 @@
 <script>
 
 
-var scheduler = new jssim.Scheduler();
-var nbAxisParts
-const stepSize = 5
-
 function initSimulation(){
     nbAxisParts = 0
-
     scheduler.reset();
+
+    // id, priority (higher is more prior), sceduler, profil for task (type, duration, args)
     var r1 = new Resource(69,3, scheduler)
     var t1 = new Task(42, 2, scheduler, [["access", 5, r1], ["execute", 10], ["access", 5, r1]])
-    //var t2 = new Task(88, 1, scheduler, [["access", 5, r1], ["execute", 10], ["access", 5, r1]])
-
-    var t2 = new Task(88, 1, scheduler, [["access", 6, r1], ["execute", 4],["access", 6, r1],["execute", 6], ["access", 7, r1], ["execute", 6]])
-
+    var t2 = new Task(88, 1, scheduler, [["access", 5, r1], ["execute", 10], ["access", 5, r1]])
     
     r1.setAllTasksInfo([t1, t2])
 
@@ -67,71 +60,6 @@ function initSimulation(){
     addOffset(t2, 9)
     scheduler.schedule(r1, 0);
 }
-
-function addOffset(task, offsetVal){
-    var taskSimulView = document.getElementById(task.guid().toString()+"simulationView")
-    var fakeTask = document.createElement("div")
-    fakeTask.className="task"
-    fakeTask.style.width = (offsetVal*10).toString()+"px"
-    var offset = document.createElement("div")
-    offset.className="offset"
-    offset.style.width = (offsetVal*10).toString()+"px"
-    fakeTask.appendChild(offset)
-    taskSimulView.appendChild(fakeTask)
-}
-
-function startSimulation() {
-
-    const simulationColumnRect = document.getElementById("simulationColumn").getBoundingClientRect()
-    const mainTableRect = document.getElementById("mainTable").getBoundingClientRect()
-    const timeLine = document.getElementById("timeLine")
-    const hidder = document.getElementById("hidder")
-
-    timeLine.style.top= simulationColumnRect.top.toString()+"px"
-    timeLine.style.left= simulationColumnRect.left.toString()+"px"
-    timeLine.style.height= mainTableRect.height.toString()+"px"
-    timeLine.style.visibility = "visible"
-
-    const allSimulationView = document.getElementsByClassName("simulationView")
-
-    hidder.style.top = simulationColumnRect.top.toString()+"px"
-    hidder.style.left = simulationColumnRect.right.toString()+"px"
-    hidder.style.height = mainTableRect.height.toString()+"px"
-    hidder.style.width = "500px"
-
-    const timeAxis = document.getElementById("timeAxis")
-    timeAxis.style.left = simulationColumnRect.left.toString()+"px"
-
-    
-    var simulationSpeed = document.getElementById("simulationSpeed").value
-
-
-    this.intervalID = window.setInterval(()=>{
-        timeLine.style.marginLeft = (4+(scheduler.current_time*10)).toString()+"px"
-        hidder.style.marginLeft = (4+(scheduler.current_time*10)).toString()+"px"
-        allSimulationView[0].innerHTML = "Simu@"+(scheduler.current_time*1).toString()
-        for(let i = 0; i < allSimulationView.length; i++){
-            allSimulationView[i].style.width = ((scheduler.current_time*10)).toString()+"px"
-        }
-        
-        var neededAxisParts = Math.floor(scheduler.current_time / stepSize)+1
-        for(let i = nbAxisParts; i < neededAxisParts; i++, nbAxisParts++){
-            createAxisPart(timeAxis, nbAxisParts*stepSize, stepSize*10)
-        } 
-
-        document.getElementById("simulationSpeedDiv").style.visibility = "hidden"
-
-       window.scrollTo({ left: document.body.scrollWidth-150, behavior: 'smooth' });
-        scheduler.update()
-    }, simulationSpeed);
-
-}
-
-function stopSimulation() {
-    window.clearInterval(this.intervalID)
-    document.getElementById("simulationSpeedDiv").style.visibility = "visible"
-}
-
 
 </script>
 

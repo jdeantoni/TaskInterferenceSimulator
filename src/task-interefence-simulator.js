@@ -263,3 +263,73 @@ function createAxisPart(theDiv, time, size){
     theDiv.appendChild(svl)
     theDiv.appendChild(tm)
 }
+
+function addOffset(task, offsetVal){
+    var taskSimulView = document.getElementById(task.guid().toString()+"simulationView")
+    var fakeTask = document.createElement("div")
+    fakeTask.className="task"
+    fakeTask.style.width = (offsetVal*10).toString()+"px"
+    var offset = document.createElement("div")
+    offset.className="offset"
+    offset.style.width = (offsetVal*10).toString()+"px"
+    fakeTask.appendChild(offset)
+    taskSimulView.appendChild(fakeTask)
+}
+
+function startSimulation() {
+
+    const simulationColumnRect = document.getElementById("simulationColumn").getBoundingClientRect()
+    const mainTableRect = document.getElementById("mainTable").getBoundingClientRect()
+    const timeLine = document.getElementById("timeLine")
+    const hidder = document.getElementById("hidder")
+
+    timeLine.style.top= simulationColumnRect.top.toString()+"px"
+    timeLine.style.left= simulationColumnRect.left.toString()+"px"
+    timeLine.style.height= mainTableRect.height.toString()+"px"
+    timeLine.style.visibility = "visible"
+
+    const allSimulationView = document.getElementsByClassName("simulationView")
+
+    hidder.style.top = simulationColumnRect.top.toString()+"px"
+    hidder.style.left = simulationColumnRect.right.toString()+"px"
+    hidder.style.height = mainTableRect.height.toString()+"px"
+    hidder.style.width = "500px"
+
+    const timeAxis = document.getElementById("timeAxis")
+    timeAxis.style.left = simulationColumnRect.left.toString()+"px"
+
+    
+    var simulationSpeed = document.getElementById("simulationSpeed").value
+
+
+    this.intervalID = window.setInterval(()=>{
+        timeLine.style.marginLeft = (4+(scheduler.current_time*10)).toString()+"px"
+        hidder.style.marginLeft = (4+(scheduler.current_time*10)).toString()+"px"
+        allSimulationView[0].innerHTML = "Simu@"+(scheduler.current_time*1).toString()
+        for(let i = 0; i < allSimulationView.length; i++){
+            allSimulationView[i].style.width = ((scheduler.current_time*10)).toString()+"px"
+        }
+        
+        var neededAxisParts = Math.floor(scheduler.current_time / stepSize)+1
+        for(let i = nbAxisParts; i < neededAxisParts; i++, nbAxisParts++){
+            createAxisPart(timeAxis, nbAxisParts*stepSize, stepSize*10)
+        } 
+
+        document.getElementById("simulationSpeedDiv").style.visibility = "hidden"
+
+       window.scrollTo({ left: document.body.scrollWidth-150, behavior: 'smooth' });
+        scheduler.update()
+    }, simulationSpeed);
+
+}
+
+function stopSimulation() {
+    window.clearInterval(this.intervalID)
+    document.getElementById("simulationSpeedDiv").style.visibility = "visible"
+}
+
+
+
+var scheduler = new jssim.Scheduler();
+var nbAxisParts
+const stepSize = 5
