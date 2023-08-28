@@ -10,8 +10,10 @@ class Task extends jssim.SimEvent {
         this.sim=sim
         this.scheduler = sim.scheduler
         this.interferenceDuration = 0
+        this.iterationInteferenceDuration = 0
         this.startWaitingTime = -1
         this.taskWidth = 0;
+        this.nbIteration = 0
         
         //initDivElements
         var table = document.getElementById("mainTable")
@@ -22,26 +24,37 @@ class Task extends jssim.SimEvent {
         const taskStaticView = taskView.insertCell();
         taskStaticView.id=this.guid().toString()+"staticView"
         // taskStaticView.className="staticView"
-
+        // const wholeTaskDiv = document.createElement("div");
+        // wholeTaskDiv.className = "taskView";
 
         const taskSimulationView = taskView.insertCell();
         taskSimulationView.id=this.guid().toString()+"simulationView"
         taskSimulationView.className="simulationView"
 
         //create the div elements
-        this.taskDiv = this.createTask(uid, seg, true)
+        this.taskWholeView = this.createTask(uid, seg, true)
         // add the newly created element and its content into the DOM
-        taskStaticView.appendChild(this.taskDiv);
+        taskStaticView.appendChild(this.taskWholeView);
     }
 
     createTask(uid, seg, withTitle = false) {
         this.taskWidth = 0
+        const wholeTask = document.createElement("table");
+        wholeTask.className = "simulationTableView";
+        wholeTask.id=this.guid().toString()+"simulationTableView"+this.nbIteration.toString()
+        const taskWcetRow = wholeTask.insertRow()
+        const taskWcetCell = taskWcetRow.insertCell();
+        taskWcetCell.className="borderVisible"
+        const taskProfilRow = wholeTask.insertRow()
+        const taskProfilCell = taskProfilRow.insertCell();
+        
+   
+
+
         // create a new div element
-        const task = document.createElement("div");
-        task.className = "task";
-        if (withTitle){
-            task.innerHTML = uid.toString()
-        }
+        const taskProfil = document.createElement("div");
+        taskProfil.className = "task";
+        
         
         // and give it some content
         
@@ -62,11 +75,27 @@ class Task extends jssim.SimEvent {
             action.className = type;
             action.style.width = Math.floor(duration * this.sim.stepSize).toString() + "px";
             this.taskWidth = this.taskWidth + Math.floor(duration * this.sim.stepSize);
-            task.appendChild(action);
+            taskProfil.appendChild(action);
         }
 
-        task.style.width = Math.floor(this.taskWidth*1.06).toString() + "px";
-        return task
+        taskProfil.style.width = Math.floor(this.taskWidth).toString() + "px";
+        this.taskDiv = taskProfil
+
+        
+        taskProfilCell.appendChild(taskProfil)
+        
+
+        const taskWcet = document.createElement("div");
+        taskWcet.id=this.guid().toString()+"Wcet"+this.nbIteration.toString()
+        if (withTitle){
+            taskWcet.innerHTML = uid.toString()+" execTime="+(this.taskWidth/this.sim.stepSize).toString()
+        }
+        
+        taskWcet.style.width = Math.floor(this.taskWidth - 2).toString()+"px"
+        taskWcetCell.appendChild(taskWcet)
+
+
+        return wholeTask
     }
 
     TaskStates = ["waitingAction", "running", "waitingResource", "accessingResource", "dead"]
@@ -77,12 +106,16 @@ class Task extends jssim.SimEvent {
         var messages = this.readInBox();
         if(this.state == "waitingAction"){
             if(this.currentAction == 0){
+                this.iterationInteferenceDuration = 0
                 //create the div elements
-                this.taskDiv = this.createTask(this.guid(), this.segment)
+                this.nbIteration++
+                this.taskWholeView = this.createTask(this.guid(), this.segment)
                 // add the newly created element and its content into the DOM
                 var simView = document.getElementById(this.guid().toString()+"simulationView")
                 simView.style.width = Math.floor(this.time*this.sim.stepSize).toString()+"px"
-                simView.appendChild(this.taskDiv);
+                simView.appendChild(this.taskWholeView);
+                var simTabView = document.getElementById(this.guid().toString()+"simulationTableView"+this.nbIteration.toString())
+                simTabView.style.width = Math.floor(this.taskWidth).toString()+"px"
             }
 
 
@@ -111,11 +144,19 @@ class Task extends jssim.SimEvent {
             this.interferenceDuration = this.time - this.startWaitingTime
             var accessDiv = this.taskDiv.childNodes[this.currentAction]
             var interferDiv = accessDiv.childNodes[0]
+            this.taskWholeView.style.width = Math.floor(this.taskWidth + this.interferenceDuration*this.sim.stepSize).toString()+"px"
             this.taskDiv.style.width = Math.floor(this.taskWidth + this.interferenceDuration*this.sim.stepSize).toString()+"px"
             accessDiv.style.width = Math.floor(this.segment[this.currentAction][1]*this.sim.stepSize + this.interferenceDuration*this.sim.stepSize).toString()+"px" 
             interferDiv.style.width = Math.floor(this.interferenceDuration*this.sim.stepSize).toString()+"px"
+            
+
             if (this.interferenceDuration > 0) {
-                interferDiv.innerHTML = '<h2 style="position:absolute; font-size:small;">'+(this.interferenceDuration).toString()+"</h2>"
+                this.iterationInteferenceDuration += this.interferenceDuration
+                // interferDiv.innerHTML = '<h2 style="position:absolute; font-size:small;">'+(this.interferenceDuration).toString()+"</h2>"
+                var wcetDiv = document.getElementById(this.guid().toString()+"Wcet"+this.nbIteration.toString())
+                wcetDiv.style.width = Math.floor(this.taskWidth + this.interferenceDuration*this.sim.stepSize - 2).toString()+"px"
+                // wcetDiv.innerHTML = "execTime="+((this.taskWidth/this.sim.stepSize)+this.interferenceDuration).toString()
+                wcetDiv.innerHTML = "interference="+(this.iterationInteferenceDuration).toString()
             }
             //'<h2 style="margin-top: 26px;margin-bottom: 0px;height: 30px;">'
             //do not wake up if no messages or KO
