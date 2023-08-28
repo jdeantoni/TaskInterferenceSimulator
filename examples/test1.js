@@ -7,13 +7,22 @@ define(function (require) {
 });
 
 define()
-var sim = new TaskInterferenceSimulator()
 
 
 function initSimulation(){
+    var sim = new TaskInterferenceSimulator()
     sim.nbAxisParts = 0
     sim.scheduler.reset();
 
+    elaborateAndRunSystem(sim);
+
+    document.getElementById("startButton").onclick = () => {sim.startSimulation()}
+    document.getElementById("stopButton").onclick = () => {sim.stopSimulation()}
+}
+
+document.addEventListener('DOMContentLoaded', initSimulation)
+
+function elaborateAndRunSystem(sim){
     // id, priority (higher is more prior), sceduler, profil for task (type, duration, args)
     var r1 = new Resource(69,3, sim.scheduler)
     var t1 = new Task(42, 2, sim.scheduler, [["access", 5, r1], ["execute", 10], ["access", 5, r1]])
@@ -26,9 +35,3 @@ function initSimulation(){
     sim.addOffset(t2, 5)
     sim.scheduler.schedule(r1, 0);
 }
-
-document.addEventListener('DOMContentLoaded', initSimulation)
-document.getElementById("startButton").onclick = () => {sim.startSimulation()}
-document.getElementById("stopButton").onclick = () => {sim.stopSimulation()}
-
-export {sim, initSimulation};
