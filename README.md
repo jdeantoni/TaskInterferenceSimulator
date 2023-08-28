@@ -5,5 +5,9 @@ multi agent timed discrete event simulator to simulate the interference between 
 # Installation:
 
  ```
-   npm install js-simulator
+   npm install
  ```
+
+# usage
+
+ * TODO
