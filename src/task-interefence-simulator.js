@@ -65,9 +65,12 @@ class TaskInterferenceSimulator{
 
     doStep(){
         const allSimulationView = document.getElementsByClassName("simulationView")
+        const mainTableRect = document.getElementById("mainTable").getBoundingClientRect()
 
         timeLine.style.marginLeft = Math.floor(4+(this.scheduler.current_time*this.stepSize)).toString()+"px"
+        timeLine.style.height= mainTableRect.height.toString()+"px"
         hidder.style.marginLeft = Math.floor(4+(this.scheduler.current_time*this.stepSize)).toString()+"px"
+        hidder.style.height= mainTableRect.height.toString()+"px"
         allSimulationView[0].innerHTML = "Simu@"+Math.floor(this.scheduler.current_time*1).toString()+"&nbsp;&nbsp;&nbsp;&nbsp;"
         for(let i = 0; i < allSimulationView.length; i++){
             allSimulationView[i].style.width = Math.floor(this.scheduler.current_time *this.stepSize).toString()+"px"
