@@ -81,7 +81,9 @@ class Resource extends jssim.SimEvent {
     }
 
     giveAccessToWaitingUser() {
+        this.waitingUsers = this.waitingUsers.reverse()
         var nextUser = this.waitingUsers.pop()
+        this.waitingUsers = this.waitingUsers.reverse()
         this.sendMsg(nextUser.guid(), {
             content: "OK",
             sender: this.guid()
