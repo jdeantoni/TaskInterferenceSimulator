@@ -5,7 +5,6 @@ class Task extends jssim.SimEvent {
         super(priority)
         this.id=uid
         this.state = "waitingAction"
-        this.segment = seg
         this.currentAction = 0
         this.sim=sim
         this.scheduler = sim.scheduler
@@ -15,6 +14,27 @@ class Task extends jssim.SimEvent {
         this.taskWidth = 0;
         this.nbIteration = 0
         
+        this.OriginalSeg=seg
+        //split access segments
+        var res = []
+        for (var i = 0 ; i < seg.length; i++) {
+            var type=seg[i][0];
+            if (type === "access"){
+                console.log("seg:",seg)
+
+                var duration = seg[i][1];
+                var resource = seg[i][2];
+                for(var n = 0; n < Math.floor(duration/8); n++){ //RSL 100% accessdu au memcpy ?
+                    res.push(["access", 5, resource])
+                    res.push(["execute", 3])
+                }
+            }else{
+                res.push(seg[i])
+            }
+        }   
+        this.segment = res
+        seg= res 
+
         //initDivElements
         var table = document.getElementById("mainTable")
         const taskView = table.insertRow()
@@ -32,13 +52,15 @@ class Task extends jssim.SimEvent {
         taskSimulationView.className="simulationView"
 
         //create the div elements
-        this.taskWholeView = this.createTask(uid, seg, true)
+        this.taskWholeView = this.createTask(uid, this.segment, true)
         // add the newly created element and its content into the DOM
         taskStaticView.appendChild(this.taskWholeView);
     }
 
     createTask(uid, seg, withTitle = false) {
         this.taskWidth = 0
+        this.taskDuration = 0
+        this.eventQueue = []
         const wholeTask = document.createElement("table");
         wholeTask.className = "simulationTableView";
         wholeTask.id=this.guid().toString()+"simulationTableView"+this.nbIteration.toString()
@@ -54,30 +76,40 @@ class Task extends jssim.SimEvent {
         // create a new div element
         const taskProfil = document.createElement("div");
         taskProfil.className = "task";
-        
-        
+          
+
         // and give it some content
         
         for (var i in seg) {
             var type=seg[i][0];
             var duration = seg[i][1];
             const action = document.createElement("div");
-            if (type === "access"){
-                const accessInterference = document.createElement("div");
-                accessInterference.className="interferenceDuration"
-                accessInterference.style.width = "0px";
-                action.appendChild(accessInterference)   
-                const accessInit = document.createElement("div");
-                accessInit.className="initialDuration"
-                accessInit.style.width = Math.floor(duration * this.sim.stepSize).toString() + "px";
-                action.appendChild(accessInit) 
+            if (type === "waitEvent"){
+                action.style.width = "20px"; //arbitrarily
+                this.taskWidth = this.taskWidth + 20
+                action.innerHTML = "<p>"+seg[i][1]+"</p>";
+            }else{
+
+                 if (type === "access"){
+                        const accessInterference = document.createElement("div");
+                        accessInterference.className="interferenceDuration"
+                        accessInterference.style.width = "0px";
+                        action.appendChild(accessInterference)   
+                        const accessInit = document.createElement("div");
+                        accessInit.className="initialDuration"
+                        accessInit.style.width = Math.floor((duration/10) * this.sim.stepSize).toString() + "px";
+                        action.appendChild(accessInit)  
+                }
+
+               
+                action.style.width = Math.floor(duration * this.sim.stepSize).toString() + "px";
+                this.taskDuration = this.taskDuration + Math.floor(duration);
             }
             action.className = type;
-            action.style.width = Math.floor(duration * this.sim.stepSize).toString() + "px";
-            this.taskWidth = this.taskWidth + Math.floor(duration * this.sim.stepSize);
             taskProfil.appendChild(action);
-        }
 
+        }
+        this.taskWidth += this.taskDuration*this.sim.stepSize
         taskProfil.style.width = Math.floor(this.taskWidth).toString() + "px";
         this.taskDiv = taskProfil
 
@@ -95,15 +127,42 @@ class Task extends jssim.SimEvent {
         taskWcetCell.appendChild(taskWcet)
 
 
+         
+
         return wholeTask
     }
 
-    TaskStates = ["waitingAction", "running", "waitingResource", "accessingResource", "dead"]
+    //only for record
+    TaskStates = ["waitingAction", "running", "waitingResource", "accessingResource", "waitingEvent", "dead"]
 
+    isInQueue(eventName){
+        for(var i = 0; i < this.eventQueue.length; ++i){
+            if(this.eventQueue[i] == eventName){
+                return true
+            }
+        }
+        return false
+    }
+
+    removeFromQueue(eventName) {
+        var indexOfEvent = this.eventQueue.indexOf(eventName)
+        if (indexOfEvent != -1) {
+            this.eventQueue.splice(indexOfEvent, 1)
+        } else {
+            console.error("task: a non popped event cannot be removed")
+        }
+        return
+    }
 
     react(deltaTime){
         var nextSched = 0
         var messages = this.readInBox();
+        for(var i = 0; i < messages.length; ++i){
+            if (messages[i].content == "event"){
+                this.eventQueue.push(messages[i].eventName)
+            }
+        }
+        
         if(this.state == "waitingAction"){
             if(this.currentAction == 0){
                 this.iterationInteferenceDuration = 0
@@ -131,6 +190,15 @@ class Task extends jssim.SimEvent {
                     sender:this.guid()
                 });
                 this.scheduler.scheduleOnceIn(resource,0)
+            }
+            else if (this.segment[this.currentAction][0] == "waitingEvent"){
+                var waitedEvent = this.segment[this.currentAction][1]
+                if (isInQueue(waitedEvent)){
+                    removeFromQueue(waitedEvent)
+                    this.currentAction++
+                }else{
+                    this.state = "waitingEvent"
+                }
             }
         }
         else if(this.state == "executing"){
@@ -188,6 +256,9 @@ class Task extends jssim.SimEvent {
             this.scheduler.scheduleOnceIn(resource,0)
             this.currentAction = (this.currentAction+1)%this.segment.length
             this.state = "waitingAction"
+        }
+        else if(this.state == "waitEvent"){
+          
         }
 
     return nextSched

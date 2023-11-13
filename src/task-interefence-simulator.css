@@ -58,7 +58,6 @@
   }
 
   .access {
-    /* width: 50px; */
     height: 50px;
     background-color: rgb(39, 244, 107);
     color: white; 
@@ -84,6 +83,18 @@
     background-color: #6b27f4;
     color: white;
     display: inline-block;
+  }
+
+  .waitEvent {
+    /* width: 50px; */
+    height: 50px;
+    background-color: #fec403;
+    color: white;
+    display: inline-block;
+    white-space: nowrap;
+    vertical-align: middle;
+    align-items: center;
+    margin-bottom: 41px;
   }
   
    html { 
